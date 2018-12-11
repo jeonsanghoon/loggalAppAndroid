@@ -30,9 +30,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="HardcodedDebugMode">
-        <meta-data
-            android:name="com.google.android.maps.v2.API_KEY"
-            android:value="@string/googlekey" />
+
 
         <activity android:name=".MainActivity">
             <intent-filter>

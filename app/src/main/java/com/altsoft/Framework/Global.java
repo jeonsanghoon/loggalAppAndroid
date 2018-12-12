@@ -1,6 +1,7 @@
 package com.altsoft.Framework;
 
 import com.altsoft.Framework.map.MapInfo;
+import com.altsoft.Interface.DaumMapService;
 import com.altsoft.Interface.MobileService;
 import com.altsoft.model.LOGIN_INFO;
 
@@ -50,8 +51,10 @@ public class Global {
     {
         if(_apiservice == null)
         {
+
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl("http://api.altsoft.ze.am")
+
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
             _apiservice = retrofit.create(MobileService.class);
@@ -59,6 +62,20 @@ public class Global {
         return _apiservice;
     }
 
+    static DaumMapService _daumMapService;
+    public static DaumMapService getDaumMapAPIService()
+    {
+        if(_daumMapService == null)
+        {
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("https://dapi.kakao.com")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            _daumMapService = retrofit.create(DaumMapService.class);
+        }
+        return _daumMapService;
+    }
     static FtpInfo _ftpInfo;
     public static FtpInfo getFtpInfo() throws Exception {
         if(_ftpInfo == null) {

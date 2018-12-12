@@ -28,6 +28,7 @@ import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.altsoft.Adapter.SearchAdapter;
 import com.altsoft.Framework.Global;
 import com.altsoft.Framework.control.altAutoCmpleateTextView;
 import com.altsoft.model.keyword.CODE_DATA;
@@ -45,10 +46,18 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.JsonObject;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class locationMapActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
@@ -79,6 +88,7 @@ public class locationMapActivity extends AppCompatActivity implements OnMapReady
     altAutoCmpleateTextView autoCompleteTextView;
     Geocoder geocoder;
     private GoogleMap mMap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,7 +120,50 @@ public class locationMapActivity extends AppCompatActivity implements OnMapReady
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        ComponentInit();
 
+        Call<JsonObject> call = Global.getDaumMapAPIService().GetLatiLongiToAddress(Global.getMapInfo().latitude, Global.getMapInfo().longitude);
+
+        call.enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+
+            }
+        });
+
+        Call<JsonObject> call2 = Global.getDaumMapAPIService().GetAddressSearch("경기도 안성시");
+
+        call2.enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call2, Response<JsonObject> response2) {
+
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call2, Throwable t) {
+
+            }
+        });
+/*
+        Call<JsonObject> call2 = Global.getDaumMapAPIService().GetAddressKeyword("카카오프렌즈");
+
+        call2.enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+
+            }
+        });
+*/
     }
 
     private void ComponentInit() {
@@ -179,7 +232,7 @@ public class locationMapActivity extends AppCompatActivity implements OnMapReady
         String longitude = splitStr[12].substring(splitStr[12].indexOf("=") + 1); // 경도
         System.out.println(latitude);
         System.out.println(longitude);
-
+        if (currentMarker != null) currentMarker.remove();
         // 좌표(위도, 경도) 생성
         LatLng point = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
         // 마커 생성
@@ -188,7 +241,7 @@ public class locationMapActivity extends AppCompatActivity implements OnMapReady
         mOptions2.snippet(address);
         mOptions2.position(point);
         // 마커 추가
-        mMap.addMarker(mOptions2);
+        currentMarker = mMap.addMarker(mOptions2);
         // 해당 좌표로 화면 줌
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point,15));
     }
@@ -306,9 +359,11 @@ public class locationMapActivity extends AppCompatActivity implements OnMapReady
             @Override
             public void onMapClick(LatLng latLng) {
 
-                mMap.clear();
+
+                if (currentMarker != null) currentMarker.remove();
                 Log.d(TAG, "onMapClick :");
                 MarkerOptions mOptions = new MarkerOptions();
+
                 // 마커 타이틀
                 mOptions.title(Global.getMapInfo().getAddress(mActivity, latLng.latitude, latLng.longitude));
                 Double latitude = latLng.latitude; // 위도
@@ -318,7 +373,7 @@ public class locationMapActivity extends AppCompatActivity implements OnMapReady
                 // LatLng: 위도 경도 쌍을 나타냄
                 mOptions.position(new LatLng(latitude, longitude));
                 // 마커(핀) 추가
-                mMap.addMarker(mOptions);
+                currentMarker = mMap.addMarker(mOptions);
 
 
                 // 해당 좌표로 화면 줌
@@ -524,15 +579,17 @@ public class locationMapActivity extends AppCompatActivity implements OnMapReady
         String markerSnippet = "위도:" + String.valueOf(Global.getMapInfo().latitude)
                 + " 경도:" + String.valueOf(Global.getMapInfo().longitude);;
 
-        mMap.clear();;
+
         if (currentMarker != null) currentMarker.remove();
 
         MarkerOptions markerOptions = new MarkerOptions();
+
         markerOptions.position(DEFAULT_LOCATION);
         markerOptions.title(markerTitle);
         markerOptions.snippet(markerSnippet);
         markerOptions.draggable(true);
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
         currentMarker = mMap.addMarker(markerOptions);
 
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, 15);
